@@ -1,0 +1,545 @@
+openapi: 3.0.1
+info:
+  title: Bank Cards API
+  description: API для работы с банковскими картами
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+tags:
+  - name: "Пользователь: Карты"
+    description: API для работы с картами пользователя (только USER)
+  - name: "Админ: Пользователи"
+    description: API для управления пользователями (только ADMIN)
+  - name: Аутентификация
+    description: API для регистрации и входа пользователей
+  - name: "Админ: Карты"
+    description: API для управления картами (только ADMIN)
+paths:
+  /api/admin/users/{userId}/role:
+    put:
+      tags:
+        - "Админ: Пользователи"
+      summary: Обновить роль пользователя
+      operationId: updateRole
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: role
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "404":
+          description: Пользователь не найден
+        "200":
+          description: Роль обновлена
+        "400":
+          description: Недопустимая роль
+  /api/admin/cards/{cardId}/activate:
+    put:
+      tags:
+        - "Админ: Карты"
+      summary: Активировать карту
+      operationId: activateCard
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Карта активирована
+        "404":
+          description: Карта не найдена
+  /api/user/cards/{cardId}/block:
+    post:
+      tags:
+        - "Пользователь: Карты"
+      summary: Заблокировать свою карту
+      operationId: blockCard
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "404":
+          description: Карта не найдена
+        "200":
+          description: Карта заблокирована
+        "403":
+          description: Карта не принадлежит пользователю
+  /api/user/cards/transfer:
+    post:
+      tags:
+        - "Пользователь: Карты"
+      summary: Перевести средства между своими картами
+      operationId: transfer
+      parameters:
+        - name: fromCardId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: toCardId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        "400":
+          description: Некорректная сумма или ID карт
+        "404":
+          description: Карта не найдена
+        "409":
+          description: Недостаточно средств
+        "403":
+          description: Карты не принадлежат пользователю
+        "200":
+          description: Перевод выполнен
+  /api/auth/register:
+    post:
+      tags:
+        - Аутентификация
+      summary: Регистрация нового пользователя
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "201":
+          description: Пользователь создан
+  /api/auth/login:
+    post:
+      tags:
+        - Аутентификация
+      summary: Вход пользователя
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+        required: true
+      responses:
+        "200":
+          description: Успешная аутентификация
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /api/admin/users:
+    post:
+      tags:
+        - "Админ: Пользователи"
+      summary: Создать нового пользователя
+      operationId: createUser
+      parameters:
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDto"
+        required: true
+      responses:
+        "201":
+          description: Пользователь создан
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "400":
+          description: Логин занят или некорректные данные
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+  /api/admin/cards:
+    get:
+      tags:
+        - "Админ: Карты"
+      summary: Получить все карты с пагинацией
+      operationId: getAllCards
+      parameters:
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Список карт
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Page"
+        "403":
+          description: Доступ запрещён (не ADMIN)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardDto"
+    post:
+      tags:
+        - "Админ: Карты"
+      summary: Создать новую карту
+      operationId: createCard
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardDto"
+        required: true
+      responses:
+        "404":
+          description: Пользователь не найден
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardDto"
+        "400":
+          description: Некорректные данные карты
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardDto"
+        "201":
+          description: Карта создана
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardDto"
+  /api/user/cards:
+    get:
+      tags:
+        - "Пользователь: Карты"
+      summary: Получить свои карты с пагинацией
+      operationId: getUserCards
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Список карт пользователя
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardDto"
+        "400":
+          description: Некорректный ID пользователя
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardDto"
+  /api/admin/users/{userId}:
+    get:
+      tags:
+        - "Админ: Пользователи"
+      summary: Получить пользователя по ID
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "404":
+          description: Пользователь не найден
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "200":
+          description: Пользователь найден
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+    delete:
+      tags:
+        - "Админ: Пользователи"
+      summary: Удалить пользователя
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Пользователь удалён
+        "404":
+          description: Пользователь не найден
+  /api/admin/cards/{cardId}:
+    delete:
+      tags:
+        - "Админ: Карты"
+      summary: Удалить карту
+      operationId: deleteCard
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Карта удалена
+        "404":
+          description: Карта не найдена
+components:
+  schemas:
+    RegisterRequest:
+      required:
+        - password
+        - role
+        - username
+      type: object
+      properties:
+        username:
+          maxLength: 50
+          minLength: 3
+          pattern: "^[a-zA-Z0-9._-]+$"
+          type: string
+          description: Логин пользователя (уникальный)
+          example: ivan.ivanov
+        password:
+          maxLength: 100
+          minLength: 6
+          type: string
+          description: Пароль пользователя
+          example: password123
+        role:
+          type: string
+          description: Роль пользователя в системе
+          example: USER
+          enum:
+            - USER
+            - ADMIN
+      description: Данные для регистрации нового пользователя
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Логин пользователя
+          example: ivan.ivanov
+        password:
+          type: string
+          description: Пароль пользователя
+          example: password123
+      description: Данные для аутентификации пользователя
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT-токен
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      description: Ответ после успешной аутентификации
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор пользователя
+          format: int64
+          example: 1
+        username:
+          type: string
+          description: Логин пользователя (уникальный)
+          example: ivan.ivanov
+        role:
+          type: string
+          description: Роль пользователя в системе
+          example: USER
+          enum:
+            - USER
+            - ADMIN
+      description: DTO для представления пользователя системы
+    CardDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID карты
+          format: int64
+          example: 1
+        maskedNumber:
+          type: string
+          description: Номер карты (маскированный)
+          example: '**** **** **** 1234'
+        owner:
+          type: string
+          description: Владелец карты
+          example: Иван Иванов
+        expirationDate:
+          type: string
+          description: Срок действия карты
+          example: 12/2025
+        status:
+          type: string
+          description: Статус карты
+          example: Активна
+          enum:
+            - ACTIVE
+            - BLOCKED
+            - EXPIRED
+        balance:
+          type: number
+          description: Баланс карты
+          example: 1000.5
+      description: DTO для представления банковской карты
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    PageCardDto:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CardDto"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        unsorted:
+          type: boolean
+        sorted:
+          type: boolean
+    Page:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            type: object
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        empty:
+          type: boolean

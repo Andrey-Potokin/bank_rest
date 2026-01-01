@@ -1,0 +1,44 @@
+app:
+  jwt:
+    secret: your-super-secret-jwt-key-here
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank
+    username: bankuser
+    password: bankpass
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    change-log: classpath:db/migration/changelog.xml
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        default-page-size: 10
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    doc-expansion: list
+    filter: true
+  cache:
+    disabled: true
+
+logging:
+  level:
+    com.example.bankcards: INFO
+    org.springdoc: INFO
+    org.springframework: INFO
