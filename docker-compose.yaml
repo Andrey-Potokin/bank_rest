@@ -9,7 +9,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/bank
       - SPRING_DATASOURCE_USERNAME=bankuser
       - SPRING_DATASOURCE_PASSWORD=bankpass
-      - SPRING_LIQUIBASE_CHANGE_LOG=classpath:/db/migration/changelog.xml
+      - SPRING_LIQUIBASE_CHANGE_LOG=classpath:/db/migration/db.changelog-master.yaml
     depends_on:
       - db
     restart: unless-stopped
