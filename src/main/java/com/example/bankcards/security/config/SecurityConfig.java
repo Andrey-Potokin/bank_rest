@@ -41,7 +41,6 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
-//                .userDetailsService(userDetailsService());
 
         return http.build();
     }
@@ -50,13 +49,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        return username -> userRepository.findByUsername(username)
-//                .orElseThrow(() -> new UsernameNotFoundException(
-//                        "Пользователь с логином '" + username + "' не найден"
-//                ));
-//    }
 
 }
