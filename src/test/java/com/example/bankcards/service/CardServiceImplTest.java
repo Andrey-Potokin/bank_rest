@@ -35,7 +35,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class CardServiceTest {
+class CardServiceImplTest {
 
     @Mock
     private CardRepository cardRepository;
@@ -44,7 +44,7 @@ class CardServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private CardService cardService;
+    private CardServiceImpl cardService;
 
     @BeforeEach
     void setUp() {
@@ -71,11 +71,10 @@ class CardServiceTest {
         Page<Card> cardPage = new PageImpl<>(List.of(card), PageRequest.of(0, 10), 1);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.existsById(1L)).thenReturn(true); // <-- ВАЖНО: добавляем это
+        when(userRepository.existsById(1L)).thenReturn(true); //
         when(cardRepository.findByUserId(1L, PageRequest.of(0, 10))).thenReturn(cardPage);
 
         Page<CardDto> result = cardService.getUserCards(1L, PageRequest.of(0, 10));
-
 
         assertEquals(1, result.getTotalElements());
         assertEquals("**** **** **** 3456", result.getContent().get(0).getMaskedNumber());

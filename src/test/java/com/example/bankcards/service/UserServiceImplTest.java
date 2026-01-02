@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -29,7 +29,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
