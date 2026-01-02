@@ -35,15 +35,15 @@ class AdminUserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testCreateUser() throws Exception {
-        UserDto requestDto = UserDto.builder().username("newadmin").build();
-        UserDto responseDto = UserDto.builder().id(100L).username("newadmin").build();
+        UserDto requestDto = UserDto.builder().username("newuser").build();
+        UserDto responseDto = UserDto.builder().id(100L).username("newuser").build();
 
         when(userService.createUser(any(UserDto.class), eq("password")))
                 .thenReturn(responseDto);
 
         mockMvc.perform(post("/api/admin/users?password=password")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"newadmin\"}"))
+                        .content("{\"username\": \"newuser\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(100L));
     }

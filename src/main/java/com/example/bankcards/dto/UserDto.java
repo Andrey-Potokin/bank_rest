@@ -2,6 +2,7 @@ package com.example.bankcards.dto;
 
 import com.example.bankcards.entity.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class UserDto {
     private Long id;
 
     @Schema(description = "Логин пользователя (уникальный)", example = "ivan.ivanov")
+    @NotBlank(message = "Поле username не может быть пустым")
     private String username;
 
     @Schema(description = "Роль пользователя в системе", example = "USER")
