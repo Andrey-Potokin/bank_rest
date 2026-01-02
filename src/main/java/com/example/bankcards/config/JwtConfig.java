@@ -1,7 +1,6 @@
 package com.example.bankcards.config;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -17,6 +16,12 @@ public class JwtConfig {
     @Value("${app.jwt.secret}")
     private String secretKey;
 
+    @Value("${app.jwt.expiration}")
+    private long expirationTime;
+
+    @Value("${app.jwt.issuer}")
+    private String issuer;
+
     private Algorithm algorithm;
 
     @PostConstruct
@@ -25,11 +30,11 @@ public class JwtConfig {
     }
 
     public String generateToken(String username) {
-        JWTCreator.Builder tokenBuilder = JWT.create()
+        return JWT.create()
                 .withSubject(username)
-                .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)); // 1 час
-
-        return tokenBuilder.sign(algorithm);
+                .withIssuer(issuer)
+                .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
+                .sign(algorithm);
     }
 
     public boolean validateToken(String token) {
