@@ -49,4 +49,5 @@ public class JwtConfig {
                 .verify(token);
         return decodedJWT.getSubject();
     }
+
 }

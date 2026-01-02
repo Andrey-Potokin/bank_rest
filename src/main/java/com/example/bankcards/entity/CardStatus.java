@@ -6,10 +6,13 @@ import lombok.Getter;
 @Getter
 @Schema(description = "Статус карты")
 public enum CardStatus {
+
     @Schema(description = "Активна")
     ACTIVE("Активна"),
+
     @Schema(description = "Заблокирована")
     BLOCKED("Заблокирована"),
+
     @Schema(description = "Срок истёк")
     EXPIRED("Срок истёк");
 
@@ -19,4 +22,5 @@ public enum CardStatus {
     CardStatus(String value) {
         this.value = value;
     }
+
 }

@@ -31,4 +31,5 @@ public class CardDto {
 
     @Schema(description = "Баланс карты", type = "number", example = "1000.50")
     private Double balance;
+
 }

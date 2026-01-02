@@ -2,7 +2,6 @@ package com.example.bankcards.util;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.CardStatus;
 
 import java.time.LocalDate;
 
@@ -52,4 +51,5 @@ public class CardUtil {
 
         return formatted.toString();
     }
+
 }

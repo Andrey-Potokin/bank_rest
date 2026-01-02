@@ -41,4 +41,5 @@ public class CardNumberEncryptor implements AttributeConverter<String, String> {
             throw new RuntimeException("Ошибка дешифрования номера карты", e);
         }
     }
+
 }

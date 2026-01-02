@@ -26,4 +26,5 @@ public class RegisterRequest {
     @NotNull(message = "Роль пользователя обязательна")
     @Schema(description = "Роль пользователя", example = "USER")
     private UserRole role;
+
 }

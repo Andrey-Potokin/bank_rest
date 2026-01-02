@@ -76,4 +76,5 @@ class AuthControllerTest {
                         .content(invalidRequestJson))
                 .andExpect(status().isBadRequest());
     }
+
 }

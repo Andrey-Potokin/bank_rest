@@ -32,4 +32,5 @@ public class OpenApiConfig {
                         .version("1.0")
                         .description("API для работы с банковскими картами"));
     }
+
 }

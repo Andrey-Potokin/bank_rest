@@ -15,4 +15,5 @@ public class AuthResponse {
 
     @Schema(description = "JWT-токен", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String token;
+
 }

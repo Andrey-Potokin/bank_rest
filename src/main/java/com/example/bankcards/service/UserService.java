@@ -84,4 +84,5 @@ public class UserService {
         userRepository.deleteById(userId);
         log.info("Пользователь ID={} удалён", userId);
     }
+
 }

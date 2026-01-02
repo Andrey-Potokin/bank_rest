@@ -2,8 +2,6 @@ package com.example.bankcards.dto;
 
 import com.example.bankcards.entity.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,4 +22,5 @@ public class UserDto {
 
     @Schema(description = "Роль пользователя в системе", example = "USER")
     private UserRole role;
+
 }
