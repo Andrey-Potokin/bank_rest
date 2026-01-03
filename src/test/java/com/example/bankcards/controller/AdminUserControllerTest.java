@@ -22,8 +22,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 @SpringBootTest(properties = "spring.profiles.active=test")
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class AdminUserControllerTest {
 
     @Autowired

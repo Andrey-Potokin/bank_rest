@@ -1,9 +1,9 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.config.JwtConfig;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.security.jwt.JwtConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
