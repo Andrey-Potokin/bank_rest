@@ -1,11 +1,11 @@
 # JWT настройки
 app:
   jwt:
-    secret: your-super-secret-jwt-key-here
+    secret: -your-super-secret-jwt-key-here-
     expiration: 3600000  # 1 час в мс
     issuer: bankcards-app
   encryption:
-    key: your-super-encryption-key-here-0
+    key: -your-super-encryption-key-here-
 
 spring:
   datasource:

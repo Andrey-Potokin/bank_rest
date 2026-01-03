@@ -1,7 +1,5 @@
 package com.example.bankcards.security;
 
-import com.example.bankcards.repository.UserRepository;
-import com.example.bankcards.security.jwt.JwtConfig;
 import com.example.bankcards.security.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +21,7 @@ import static com.example.bankcards.entity.UserRole.USER;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtConfig jwtConfig;
-    private final UserRepository userRepository;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,7 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/**").hasRole(USER.getAuthority())
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtFilter(jwtConfig), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

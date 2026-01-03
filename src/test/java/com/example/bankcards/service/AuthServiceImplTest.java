@@ -57,7 +57,7 @@ class AuthServiceImplTest {
                 .thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("rawPassword", "encodedPassword"))
                 .thenReturn(true);
-        when(jwtConfig.generateToken("testuser"))
+        when(jwtConfig.generateToken(testUser))
                 .thenReturn("jwtToken");
 
         String token = authService.login("testuser", "rawPassword");
@@ -65,7 +65,7 @@ class AuthServiceImplTest {
         assertEquals("jwtToken", token);
         verify(userRepository).findByUsername("testuser");
         verify(passwordEncoder).matches("rawPassword", "encodedPassword");
-        verify(jwtConfig).generateToken("testuser");
+        verify(jwtConfig).generateToken(testUser);
     }
 
     @Test
@@ -111,6 +111,7 @@ class AuthServiceImplTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
+
         assertEquals("newuser", savedUser.getUsername());
         assertEquals("encodedPassword", savedUser.getPassword());
         assertEquals(UserRole.USER, savedUser.getRole());

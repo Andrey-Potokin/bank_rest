@@ -21,12 +21,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь с " + username + " не найден"));
 
-
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Неверный пароль");
         }
 
-        return jwtConfig.generateToken(username);
+        return jwtConfig.generateToken(user);
     }
 
     @Override
