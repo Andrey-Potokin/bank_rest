@@ -4,6 +4,8 @@ app:
     secret: your-super-secret-jwt-key-here
     expiration: 3600000  # 1 час в мс
     issuer: bankcards-app
+  encryption:
+    key: your-super-encryption-key-here-0
 
 spring:
   datasource:
@@ -18,7 +20,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:

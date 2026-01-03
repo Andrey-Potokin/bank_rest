@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Аутентификация", description = "API для регистрации и входа пользователей")
@@ -28,6 +30,9 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Успешная аутентификация")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         String token = authService.login(request.getUsername(), request.getPassword());
+
+        log.info("Пользователь успешно аутентифицирован: username={}", request.getUsername());
+
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
@@ -36,6 +41,11 @@ public class AuthController {
     @ApiResponse(responseCode = "201", description = "Пользователь создан")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request.getUsername(), request.getPassword(), request.getRole());
+
+        log.info("Пользователь зарегистрирован: username={}, role={}",
+                request.getUsername(), request.getRole());
+
         return ResponseEntity.created(null).build();
     }
+
 }

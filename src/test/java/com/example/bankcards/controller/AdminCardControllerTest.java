@@ -1,7 +1,9 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.service.CardService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,6 +37,9 @@ class AdminCardControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockitoBean
     private CardService cardService;
 
@@ -59,14 +64,29 @@ class AdminCardControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testCreateCard() throws Exception {
-        CardDto requestDto = CardDto.builder().owner("New Card").build();
-        CardDto responseDto = CardDto.builder().id(2L).owner("New Card").build();
+        CardDto requestDto = CardDto.builder()
+                .maskedNumber("1111 2222 3333 4444")
+                .owner("Иван Иванов")
+                .expirationDate("12/2025")
+                .status(CardStatus.ACTIVE)
+                .balance(1000.50)
+                .build();
 
-        when(cardService.createCard(any(CardDto.class), eq(10L))).thenReturn(responseDto);
+        CardDto responseDto = CardDto.builder()
+                .id(2L)
+                .maskedNumber("1111 2222 3333 4444")
+                .owner("Иван Иванов")
+                .expirationDate("12/2025")
+                .status(CardStatus.ACTIVE)
+                .balance(1000.50)
+                .build();
+
+        when(cardService.createCard(any(CardDto.class), eq(10L)))
+                .thenReturn(responseDto);
 
         mockMvc.perform(post("/api/admin/cards?userId=10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"owner\": \"New Card\"}"))
+                        .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(2L));
     }

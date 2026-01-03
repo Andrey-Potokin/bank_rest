@@ -61,10 +61,6 @@ public class CardServiceImpl implements CardService {
     @Override
     @Transactional
     public CardDto createCard(CardDto cardDto, Long userId) {
-        if (userId <= 0) {
-            throw new IllegalArgumentException("ID пользователя должен быть положительным");
-        }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден"));
 

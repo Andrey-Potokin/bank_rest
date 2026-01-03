@@ -12,31 +12,45 @@ public class CardUtil {
         dto.setId(card.getId());
         dto.setMaskedNumber(maskCardNumber(card.getNumber()));
         dto.setOwner(card.getOwner());
-        dto.setExpirationDate(card.getExpirationDate().toString());
+
+        if (card.getExpirationDate() != null) {
+            String formattedDate = String.format("%02d/%d",
+                    card.getExpirationDate().getMonthValue(),
+                    card.getExpirationDate().getYear());
+            dto.setExpirationDate(formattedDate);
+        } else {
+            dto.setExpirationDate(null);
+        }
+
         dto.setStatus(card.getStatus());
         dto.setBalance(card.getBalance());
         return dto;
     }
 
+
     public static Card toEntity(CardDto dto) {
         Card card = new Card();
         card.setId(dto.getId());
         card.setOwner(dto.getOwner());
-        card.setExpirationDate(LocalDate.parse(dto.getExpirationDate()));
+
+        if (dto.getExpirationDate() != null) {
+            String[] parts = dto.getExpirationDate().split("/");
+            int month = Integer.parseInt(parts[0]);
+            int year = Integer.parseInt(parts[1]);
+            card.setExpirationDate(LocalDate.of(year, month, 1));
+        }
+
         card.setStatus(dto.getStatus());
         card.setBalance(dto.getBalance());
         return card;
     }
 
     private static String maskCardNumber(String number) {
-        if (number == null || number.length() < 4) {
-            return number;
-        }
+        String cleanNumber = number.replace(" ", "");
+        String lastFour = cleanNumber.substring(cleanNumber.length() - 4);
 
-        String lastFour = number.substring(number.length() - 4);
         StringBuilder masked = new StringBuilder();
-
-        for (int i = 0; i < number.length() - 4; i++) {
+        for (int i = 0; i < cleanNumber.length() - 4; i++) {
             masked.append('*');
         }
         masked.append(lastFour);

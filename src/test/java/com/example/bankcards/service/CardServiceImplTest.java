@@ -90,19 +90,25 @@ class CardServiceImplTest {
 
         CardDto dto = CardDto.builder()
                 .owner("Иван Иванов")
-                .maskedNumber("4111111111111111")
-                .expirationDate("2025-12-01")
+                .maskedNumber("1111 1111 1111 1111")
+                .expirationDate("12/2025")
                 .status(CardStatus.ACTIVE)
                 .balance(1000.50)
                 .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        LocalDate expirationDate = LocalDate.of(
+                Integer.parseInt(dto.getExpirationDate().split("/")[1]),
+                Integer.parseInt(dto.getExpirationDate().split("/")[0]),
+                1
+        );
+
         Card savedCard = Card.builder()
                 .id(200L)
                 .owner(dto.getOwner())
-                .number(dto.getMaskedNumber())
-                .expirationDate(LocalDate.parse(dto.getExpirationDate()))
+                .number(dto.getMaskedNumber().replace(" ", ""))
+                .expirationDate(expirationDate)
                 .status(CardStatus.ACTIVE)
                 .balance(dto.getBalance())
                 .user(user)
@@ -115,8 +121,8 @@ class CardServiceImplTest {
         assertEquals(200L, result.getId());
         assertEquals("Иван Иванов", result.getOwner());
         assertEquals("**** **** **** 1111", result.getMaskedNumber());
-        assertEquals("2025-12-01", result.getExpirationDate());
-        assertEquals(CardStatus.ACTIVE, result.getStatus()); // Сравниваем строки
+        assertEquals("12/2025", result.getExpirationDate());
+        assertEquals(CardStatus.ACTIVE, result.getStatus());
         assertEquals(1000.50, result.getBalance());
 
         verify(cardRepository).save(argThat(card -> card.getUser().getId().equals(1L)));

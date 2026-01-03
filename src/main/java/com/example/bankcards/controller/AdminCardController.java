@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -55,7 +56,7 @@ public class AdminCardController {
     @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     public ResponseEntity<CardDto> createCard(
             @Valid @RequestBody CardDto cardDto,
-            @RequestParam("userId") Long userId) {
+            @RequestParam("userId") @Positive Long userId) {
 
         log.info("ADMIN: Создание карты для пользователя ID={}", userId);
         CardDto createdCard = cardService.createCard(cardDto, userId);
