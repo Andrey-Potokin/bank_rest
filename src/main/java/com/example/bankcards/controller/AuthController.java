@@ -2,7 +2,6 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.AuthRequest;
 import com.example.bankcards.dto.JwtResponse;
-import com.example.bankcards.dto.RegisterRequest;
 import com.example.bankcards.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,18 +33,6 @@ public class AuthController {
         log.info("Пользователь успешно аутентифицирован: username={}", request.getUsername());
 
         return ResponseEntity.ok(new JwtResponse(token));
-    }
-
-    @PostMapping("/register")
-    @Operation(summary = "Регистрация нового пользователя")
-    @ApiResponse(responseCode = "201", description = "Пользователь создан")
-    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
-        authService.register(request.getUsername(), request.getPassword(), request.getRole());
-
-        log.info("Пользователь зарегистрирован: username={}, role={}",
-                request.getUsername(), request.getRole());
-
-        return ResponseEntity.created(null).build();
     }
 
 }

@@ -1,7 +1,6 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.security.jwt.JwtConfig;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +25,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return jwtConfig.generateToken(user);
-    }
-
-    @Override
-    public void register(String username, String password, UserRole role) {
-        if (userRepository.existsByUsername(username)) {
-            throw new RuntimeException("Логин уже занят");
-        }
-
-        User user = User.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .role(role)
-                .build();
-
-        userRepository.save(user);
     }
 
 }

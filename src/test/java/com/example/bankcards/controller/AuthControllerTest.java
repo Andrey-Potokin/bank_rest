@@ -12,7 +12,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,28 +51,6 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\": \"wronguser\", \"password\": \"wrongpass\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void testRegister_Success() throws Exception {
-        String requestJson = "{\"username\": \"newuser\", \"password\": \"password123\", \"role\": \"USER\"}";
-
-        doNothing().when(authService).register(any(), any(), any());
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    void testRegister_ValidationError() throws Exception {
-        String invalidRequestJson = "{\"password\": \"password123\", \"role\": \"USER\"}";
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidRequestJson))
                 .andExpect(status().isBadRequest());
     }
 
