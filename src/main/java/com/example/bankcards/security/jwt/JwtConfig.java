@@ -5,17 +5,16 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.JwtValidationException;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Slf4j
 @Component
 public class JwtConfig {
 
@@ -36,65 +35,48 @@ public class JwtConfig {
             throw new IllegalArgumentException("JWT secret должен быть не менее 32 символов");
         }
         this.algorithm = Algorithm.HMAC256(secretKey);
-        log.info("JWT инициализирован. Issuer: {}, срок действия: {} мс", issuer, expirationTime);
     }
 
-
     public String generateToken(User user) {
-        String token = JWT.create()
+        return JWT.create()
                 .withSubject(user.getUsername())
                 .withIssuer(issuer)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
-                .withClaim("roles", user.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                .withClaim("roles",
+                        user.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(java.util.stream.Collectors.toList()))
                 .sign(algorithm);
-
-        if (log.isDebugEnabled()) {
-            log.debug("[requestId={}] Токен сгенерирован для пользователя: {}",
-                    MDC.get("requestId"), user.getUsername());
-        }
-        return token;
     }
 
-    public boolean validateToken(String token) {
+    public DecodedJWT validateToken(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new JwtValidationException("Токен не может быть пустым");
+        }
+
         try {
-            JWT.require(algorithm)
+            return JWT.require(algorithm)
                     .withIssuer(issuer)
                     .build()
                     .verify(token);
-
-            if (log.isDebugEnabled()) {
-                log.debug("[requestId={}] Токен валидирован успешно", MDC.get("requestId"));
-            }
-            return true;
-        } catch (JWTVerificationException e) {
-            log.warn("[requestId={}] Неверный токен (подпись/срок/issuer). Причина: {}",
-                    MDC.get("requestId"), e.getClass().getSimpleName());
-            return false;
-        } catch (IllegalArgumentException e) {
-            log.warn("[requestId={}] Некорректный формат токена. Причина: {}",
-                    MDC.get("requestId"), e.getClass().getSimpleName());
-            return false;
+        } catch (JWTVerificationException | IllegalArgumentException e) {
+            throw new JwtValidationException("Невалидный JWT: " + e.getMessage());
         }
     }
 
     public String getUsernameFromToken(String token) {
-        try {
-            DecodedJWT decodedJWT = JWT.require(algorithm)
-                    .withIssuer(issuer)
-                    .build()
-                    .verify(token);
+        DecodedJWT decodedJWT = validateToken(token);
+        return decodedJWT.getSubject();
+    }
 
-            String username = decodedJWT.getSubject();
-            if (log.isDebugEnabled()) {
-                log.debug("[requestId={}] Из токена извлечён username: {}",
-                        MDC.get("requestId"), username);
-            }
-            return username;
-        } catch (JWTVerificationException | IllegalArgumentException e) {
-            throw new RuntimeException("Недопустимый токен JWT", e);
+    public List<String> getRolesFromToken(String token) {
+        DecodedJWT decodedJWT = validateToken(token);
+
+        if (decodedJWT.getClaim("roles").isNull()) {
+            return Collections.emptyList();
         }
+
+        return decodedJWT.getClaim("roles").asList(String.class);
     }
 
 }

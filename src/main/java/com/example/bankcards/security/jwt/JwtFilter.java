@@ -1,115 +1,65 @@
 package com.example.bankcards.security.jwt;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtConfig jwtConfig;
-    private final UserDetailsService userDetailsService;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String requestUri = request.getRequestURI();
-
-        if (requestUri.startsWith("/swagger-ui") || requestUri.startsWith("/v3/api-docs")) {
-            chain.doFilter(request, response);
+        String requestPath = request.getRequestURI();
+        if (pathMatcher.match("/swagger-ui/**", requestPath) ||
+                pathMatcher.match("/v3/api-docs/**", requestPath)) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null) {
-            log.warn("JWT Filter: Отсутствует заголовок Authorization. URI: {}, метод: {}", requestUri, request.getMethod());
-            rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Заголовок Authorization отсутствует");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            log.warn("JWT Filter: Неверный формат заголовка Authorization. Заголовок: {}, URI: {}", authHeader, requestUri);
-            rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Ожидается 'Bearer <токен>'");
-            return;
-        }
-
-        String token = authHeader.substring(7).trim();
-
-        if (token.isEmpty()) {
-            log.warn("JWT Filter: Токен пуст после удаления префикса Bearer. URI: {}", requestUri);
-            rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Токен пуст");
-            return;
-        }
-
+        String token = authHeader.substring(7);
         try {
-            if (!jwtConfig.validateToken(token)) {
-                log.error("JWT Filter: Проверка токена не пройдена. Токен: {}, URI: {}", token, requestUri);
-                rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Недействительный или просроченный токен");
-                return;
-            }
-
+            jwtConfig.validateToken(token);
             String username = jwtConfig.getUsernameFromToken(token);
-            if (username == null || username.isEmpty()) {
-                log.warn("JWT Filter: Username не извлечён из токена. URI: {}", requestUri);
-                rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Некорректный токен");
-                return;
-            }
+            List<String> roles = jwtConfig.getRolesFromToken(token);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            List<GrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
-
+            Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
-            log.debug("JWT Filter: Аутентификация успешна. Пользователь: {}, URI: {}", username, requestUri);
 
-        } catch (JWTVerificationException | IllegalArgumentException e) {
-            log.error("JWT Filter: Ошибка проверки JWT. Сообщение: {}, Токен: {}, URI: {}",
-                    e.getMessage(), token, requestUri, e);
-            rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Ошибка проверки токена");
-            return;
-
-        } catch (UsernameNotFoundException e) {
-            log.error("JWT Filter: Пользователь не найден. URI: {}", requestUri);
-            rejectRequest(response, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не найден");
-            return;
-
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            log.error("JWT Filter: Неожиданная ошибка. Сообщение: {}, URI: {}", e.getMessage(), requestUri, e);
-            rejectRequest(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера");
-            return;
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Невалидный или просроченный JWT");
         }
-
-        chain.doFilter(request, response);
-    }
-
-    private void rejectRequest(HttpServletResponse response, int status, String message) throws IOException {
-        response.setStatus(status);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 
 }

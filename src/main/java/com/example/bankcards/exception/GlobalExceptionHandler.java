@@ -82,6 +82,16 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.BAD_REQUEST, "error", ex.getMessage());
     }
 
+    @ExceptionHandler(JwtValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleJwtValidationException(JwtValidationException ex) {
+        log.warn("JWT validation failed: {}", ex.getMessage());
+        return createErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "error",
+                "Недействительный или просроченный токен JWT"
+        );
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
         log.error("Runtime exception: {}", ex.getMessage(), ex);
