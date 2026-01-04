@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/migration/1_create_users_table.sql
   - include:
       file: db/migration/2_create_cards_table.sql
+  - include:
+      file: db/migration/3_create_admin.sql
