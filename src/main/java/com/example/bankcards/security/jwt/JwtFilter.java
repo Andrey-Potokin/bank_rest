@@ -30,7 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String requestPath = request.getRequestURI();
-        if (pathMatcher.match("/swagger-ui/**", requestPath) ||
+        if (pathMatcher.match("/api/auth/**", requestPath) ||
+                pathMatcher.match("/swagger-ui/**", requestPath) ||
                 pathMatcher.match("/v3/api-docs/**", requestPath)) {
             filterChain.doFilter(request, response);
             return;
