@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.AuthRequest;
-import com.example.bankcards.dto.AuthResponse;
+import com.example.bankcards.dto.JwtResponse;
 import com.example.bankcards.dto.RegisterRequest;
 import com.example.bankcards.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,12 +28,12 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Вход пользователя")
     @ApiResponse(responseCode = "200", description = "Успешная аутентификация")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody AuthRequest request) {
         String token = authService.login(request.getUsername(), request.getPassword());
 
         log.info("Пользователь успешно аутентифицирован: username={}", request.getUsername());
 
-        return ResponseEntity.ok(new AuthResponse(token));
+        return ResponseEntity.ok(new JwtResponse(token));
     }
 
     @PostMapping("/register")
