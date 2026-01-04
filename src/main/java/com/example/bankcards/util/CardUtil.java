@@ -31,6 +31,7 @@ public class CardUtil {
     public static Card toEntity(CardDto dto) {
         Card card = new Card();
         card.setId(dto.getId());
+        card.setNumber(dto.getMaskedNumber());
         card.setOwner(dto.getOwner());
 
         if (dto.getExpirationDate() != null) {
