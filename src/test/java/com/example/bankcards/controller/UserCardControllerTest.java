@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.service.CardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +38,8 @@ class UserCardControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testGetUserCards() throws Exception {
-        CardDto dto = CardDto.builder().id(1L).owner("User Test").build();
-        Page<CardDto> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
+        CardResponse dto = CardResponse.builder().id(1L).owner("User Test").build();
+        Page<CardResponse> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
         when(cardService.getUserCards(any(Long.class), any(Pageable.class)))
                 .thenReturn(page);

@@ -1,6 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
@@ -74,7 +75,7 @@ class CardServiceImplTest {
         when(userRepository.existsById(1L)).thenReturn(true); //
         when(cardRepository.findByUserId(1L, PageRequest.of(0, 10))).thenReturn(cardPage);
 
-        Page<CardDto> result = cardService.getUserCards(1L, PageRequest.of(0, 10));
+        Page<CardResponse> result = cardService.getUserCards(1L, PageRequest.of(0, 10));
 
         assertEquals(1, result.getTotalElements());
         assertEquals("**** **** **** 3456", result.getContent().get(0).getMaskedNumber());
@@ -88,11 +89,10 @@ class CardServiceImplTest {
                 .username("testuser")
                 .build();
 
-        CardDto dto = CardDto.builder()
+        CardCreateRequest dto = CardCreateRequest.builder()
                 .owner("Иван Иванов")
-                .maskedNumber("1111 1111 1111 1111")
+                .number("1111 1111 1111 1111")
                 .expirationDate("12/2025")
-                .status(CardStatus.ACTIVE)
                 .balance(1000.50)
                 .build();
 
@@ -107,7 +107,7 @@ class CardServiceImplTest {
         Card savedCard = Card.builder()
                 .id(200L)
                 .owner(dto.getOwner())
-                .number(dto.getMaskedNumber().replace(" ", ""))
+                .number(dto.getNumber().replace(" ", ""))
                 .expirationDate(expirationDate)
                 .status(CardStatus.ACTIVE)
                 .balance(dto.getBalance())
@@ -116,7 +116,7 @@ class CardServiceImplTest {
 
         when(cardRepository.save(any(Card.class))).thenReturn(savedCard);
 
-        CardDto result = cardService.createCard(dto, 1L);
+        CardResponse result = cardService.createCard(dto, 1L);
 
         assertEquals(200L, result.getId());
         assertEquals("Иван Иванов", result.getOwner());

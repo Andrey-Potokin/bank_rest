@@ -1,6 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.dto.UserCreateRequest;
+import com.example.bankcards.dto.UserResponse;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,12 +34,12 @@ public class AdminUserController {
     @Operation(summary = "Создать нового пользователя")
     @ApiResponse(responseCode = "201", description = "Пользователь создан")
     @ApiResponse(responseCode = "400", description = "Логин занят или некорректные данные")
-    public ResponseEntity<UserDto> createUser(
-            @Valid @RequestBody UserDto userDto,
+    public ResponseEntity<UserResponse> createUser(
+            @Valid @RequestBody UserCreateRequest request,
             @RequestParam("password") @NotBlank String password) {
 
-        log.info("ADMIN: Создание пользователя с username={}", userDto.getUsername());
-        UserDto createdUser = userService.createUser(userDto, password);
+        log.info("ADMIN: Создание пользователя с username={}", request.getUsername());
+        UserResponse createdUser = userService.createUser(request, password);
         log.info("Пользователь создан: ID={}, username={}", createdUser.getId(), createdUser.getUsername());
         return ResponseEntity.created(null).body(createdUser);
     }
@@ -47,9 +48,9 @@ public class AdminUserController {
     @Operation(summary = "Получить пользователя по ID")
     @ApiResponse(responseCode = "200", description = "Пользователь найден")
     @ApiResponse(responseCode = "404", description = "Пользователь не найден")
-    public ResponseEntity<UserDto> getUser(@PathVariable Long userId) {
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long userId) {
         log.info("ADMIN: Запрос пользователя ID={}", userId);
-        UserDto user = userService.getUserById(userId);
+        UserResponse user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 

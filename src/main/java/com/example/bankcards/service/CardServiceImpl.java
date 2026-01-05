@@ -1,6 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
@@ -34,7 +35,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CardDto> getUserCards(Long userId, Pageable pageable) {
+    public Page<CardResponse> getUserCards(Long userId, Pageable pageable) {
         if (userId <= 0) {
             throw new IllegalArgumentException("ID пользователя должен быть положительным");
         }
@@ -44,7 +45,7 @@ public class CardServiceImpl implements CardService {
         }
 
         Page<Card> cardsPage = cardRepository.findByUserId(userId, pageable);
-        List<CardDto> cardDtos = cardsPage.getContent().stream()
+        List<CardResponse> cardDtos = cardsPage.getContent().stream()
                 .map(CardUtil::toDto)
                 .toList();
 
@@ -53,18 +54,19 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CardDto> getAllCards(Pageable pageable) {
+    public Page<CardResponse> getAllCards(Pageable pageable) {
         return cardRepository.findAll(pageable)
                 .map(CardUtil::toDto);
     }
 
     @Override
     @Transactional
-    public CardDto createCard(CardDto cardDto, Long userId) {
+    public CardResponse createCard(CardCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден"));
 
-        Card card = CardUtil.toEntity(cardDto);
+        Card card = CardUtil.toEntity(request);
+        card.setStatus(CardStatus.ACTIVE);
         card.setUser(user);
         Card savedCard = cardRepository.save(card);
 

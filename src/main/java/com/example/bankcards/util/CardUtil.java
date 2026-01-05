@@ -1,14 +1,17 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.entity.Card;
+import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
 
-public class CardUtil {
+@UtilityClass
+public final class CardUtil {
 
-    public static CardDto toDto(Card card) {
-        CardDto dto = new CardDto();
+    public static CardResponse toDto(Card card) {
+        CardResponse dto = new CardResponse();
         dto.setId(card.getId());
         dto.setMaskedNumber(maskCardNumber(card.getNumber()));
         dto.setOwner(card.getOwner());
@@ -28,10 +31,9 @@ public class CardUtil {
     }
 
 
-    public static Card toEntity(CardDto dto) {
+    public static Card toEntity(CardCreateRequest dto) {
         Card card = new Card();
-        card.setId(dto.getId());
-        card.setNumber(dto.getMaskedNumber());
+        card.setNumber(dto.getNumber());
         card.setOwner(dto.getOwner());
 
         if (dto.getExpirationDate() != null) {
@@ -41,7 +43,6 @@ public class CardUtil {
             card.setExpirationDate(LocalDate.of(year, month, 1));
         }
 
-        card.setStatus(dto.getStatus());
         card.setBalance(dto.getBalance());
         return card;
     }
