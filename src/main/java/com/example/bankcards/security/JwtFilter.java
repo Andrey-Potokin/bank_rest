@@ -1,5 +1,6 @@
-package com.example.bankcards.security.jwt;
+package com.example.bankcards.security;
 
+import com.example.bankcards.config.JwtConfig;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +33,8 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestPath = request.getRequestURI();
         if (pathMatcher.match("/api/auth/**", requestPath) ||
                 pathMatcher.match("/swagger-ui/**", requestPath) ||
-                pathMatcher.match("/v3/api-docs/**", requestPath)) {
+                pathMatcher.match("/v3/api-docs/**", requestPath) ||
+                pathMatcher.match("/v3/api-docs.yaml", requestPath)) {
             filterChain.doFilter(request, response);
             return;
         }

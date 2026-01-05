@@ -1,6 +1,6 @@
-package com.example.bankcards.security;
+package com.example.bankcards.config;
 
-import com.example.bankcards.security.jwt.JwtFilter;
+import com.example.bankcards.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +28,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/admin/**").hasRole(ADMIN.getAuthority())
                         .requestMatchers("/api/user/**").hasRole(USER.getAuthority())
                         .anyRequest().authenticated()

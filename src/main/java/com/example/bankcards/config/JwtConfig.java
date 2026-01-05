@@ -1,4 +1,4 @@
-package com.example.bankcards.security.jwt;
+package com.example.bankcards.config;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
