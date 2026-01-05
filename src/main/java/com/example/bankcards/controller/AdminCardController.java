@@ -1,6 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,11 +42,11 @@ public class AdminCardController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
     )
     @ApiResponse(responseCode = "403", description = "Доступ запрещён (не ADMIN)")
-    public ResponseEntity<Page<CardDto>> getAllCards(Pageable pageable) {
+    public ResponseEntity<Page<CardResponse>> getAllCards(Pageable pageable) {
         log.info("ADMIN: Получение всех карт. Страница={}, размер={}",
                 pageable.getPageNumber(), pageable.getPageSize());
 
-        Page<CardDto> cards = cardService.getAllCards(pageable);
+        Page<CardResponse> cards = cardService.getAllCards(pageable);
         return ResponseEntity.ok(cards);
     }
 
@@ -54,12 +55,12 @@ public class AdminCardController {
     @ApiResponse(responseCode = "201", description = "Карта создана")
     @ApiResponse(responseCode = "400", description = "Некорректные данные карты")
     @ApiResponse(responseCode = "404", description = "Пользователь не найден")
-    public ResponseEntity<CardDto> createCard(
-            @Valid @RequestBody CardDto cardDto,
+    public ResponseEntity<CardResponse> createCard(
+            @Valid @RequestBody CardCreateRequest request,
             @RequestParam("userId") @Positive Long userId) {
 
         log.info("ADMIN: Создание карты для пользователя ID={}", userId);
-        CardDto createdCard = cardService.createCard(cardDto, userId);
+        CardResponse createdCard = cardService.createCard(request, userId);
         log.info("Карта создана с ID={} для пользователя ID={}", createdCard.getId(), userId);
         return ResponseEntity.created(null).body(createdCard);
     }

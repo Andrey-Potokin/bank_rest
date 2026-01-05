@@ -1,12 +1,13 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.dto.UserCreateRequest;
+import com.example.bankcards.dto.UserResponse;
 
 public interface UserService {
 
-    UserDto createUser(UserDto userDto, String password);
+    UserResponse createUser(UserCreateRequest request, String password);
 
-    UserDto getUserById(Long id);
+    UserResponse getUserById(Long id);
 
     void updateRole(Long userId, String role);
 

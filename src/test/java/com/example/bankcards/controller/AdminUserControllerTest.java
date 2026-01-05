@@ -1,6 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.dto.UserCreateRequest;
+import com.example.bankcards.dto.UserResponse;
 import com.example.bankcards.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +37,10 @@ class AdminUserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testCreateUser() throws Exception {
-        UserDto requestDto = UserDto.builder().username("newuser").build();
-        UserDto responseDto = UserDto.builder().id(100L).username("newuser").build();
+        UserCreateRequest requestDto = UserCreateRequest.builder().username("newuser").build();
+        UserResponse responseDto = UserResponse.builder().id(100L).username("newuser").build();
 
-        when(userService.createUser(any(UserDto.class), eq("password")))
+        when(userService.createUser(any(UserCreateRequest.class), eq("password")))
                 .thenReturn(responseDto);
 
         mockMvc.perform(post("/api/admin/users?password=password")
@@ -52,7 +53,7 @@ class AdminUserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testGetUser() throws Exception {
-        UserDto dto = UserDto.builder().id(200L).username("existinguser").build();
+        UserResponse dto = UserResponse.builder().id(200L).username("existinguser").build();
 
         when(userService.getUserById(200L)).thenReturn(dto);
 

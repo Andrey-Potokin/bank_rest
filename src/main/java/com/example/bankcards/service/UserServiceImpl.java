@@ -1,6 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.dto.UserCreateRequest;
+import com.example.bankcards.dto.UserResponse;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.exception.NotFoundException;
@@ -22,14 +23,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto createUser(UserDto userDto, String password) {
-        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
+    public UserResponse createUser(UserCreateRequest request, String password) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new IllegalArgumentException(
-                    "Пользователь с логином '" + userDto.getUsername() + "' уже существует"
+                    "Пользователь с логином '" + request.getUsername() + "' уже существует"
             );
         }
 
-        User user = UserUtil.toEntity(userDto);
+        User user = UserUtil.toEntity(request);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(UserRole.USER);
 
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto getUserById(Long id) {
+    public UserResponse getUserById(Long id) {
         if (id <= 0) {
             throw new IllegalArgumentException("ID пользователя должен быть положительным");
         }

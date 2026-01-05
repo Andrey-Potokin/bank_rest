@@ -1,6 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.dto.UserCreateRequest;
+import com.example.bankcards.dto.UserResponse;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.exception.NotFoundException;
@@ -38,9 +39,8 @@ class UserServiceImplTest {
 
     @Test
     void testCreateUser_Success() {
-        UserDto dto = UserDto.builder()
+        UserCreateRequest dto = UserCreateRequest.builder()
                 .username("newuser")
-                .role(UserRole.USER)
                 .build();
         String password = "password123";
 
@@ -48,11 +48,11 @@ class UserServiceImplTest {
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
-            user.setId(100L); // эмулируем присвоение ID
+            user.setId(100L);
             return user;
         });
 
-        UserDto result = userService.createUser(dto, password);
+        UserResponse result = userService.createUser(dto, password);
 
         assertEquals(100L, result.getId());
         assertEquals("newuser", result.getUsername());
@@ -61,7 +61,7 @@ class UserServiceImplTest {
 
     @Test
     void testCreateUser_UsernameExists() {
-        UserDto dto = UserDto.builder().username("existing").build();
+        UserCreateRequest dto = UserCreateRequest.builder().username("existing").build();
 
         when(userRepository.findByUsername("existing")).thenReturn(Optional.of(new User()));
 
@@ -79,7 +79,7 @@ class UserServiceImplTest {
 
         when(userRepository.findById(200L)).thenReturn(Optional.of(user));
 
-        UserDto result = userService.getUserById(200L);
+        UserResponse result = userService.getUserById(200L);
 
         assertEquals(200L, result.getId());
         assertEquals("testuser", result.getUsername());

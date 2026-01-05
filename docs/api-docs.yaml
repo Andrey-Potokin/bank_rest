@@ -4,38 +4,38 @@ info:
   description: API для работы с банковскими картами
   version: "1.0"
 servers:
-  - url: http://localhost:8080
-    description: Generated server url
+- url: http://localhost:8080
+  description: Generated server url
 security:
-  - bearerAuth: []
+- bearerAuth: []
 tags:
-  - name: "Пользователь: Карты"
-    description: API для работы с картами пользователя (только USER)
-  - name: "Админ: Пользователи"
-    description: API для управления пользователями (только ADMIN)
-  - name: Аутентификация
-    description: API для регистрации и входа пользователей
-  - name: "Админ: Карты"
-    description: API для управления картами (только ADMIN)
+- name: "Пользователь: Карты"
+  description: API для работы с картами пользователя (только USER)
+- name: "Админ: Пользователи"
+  description: API для управления пользователями (только ADMIN)
+- name: Аутентификация
+  description: API для регистрации и входа пользователей
+- name: "Админ: Карты"
+  description: API для управления картами (только ADMIN)
 paths:
   /api/admin/users/{userId}/role:
     put:
       tags:
-        - "Админ: Пользователи"
+      - "Админ: Пользователи"
       summary: Обновить роль пользователя
       operationId: updateRole
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: role
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: role
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         "404":
           description: Пользователь не найден
@@ -46,16 +46,16 @@ paths:
   /api/admin/cards/{cardId}/activate:
     put:
       tags:
-        - "Админ: Карты"
+      - "Админ: Карты"
       summary: Активировать карту
       operationId: activateCard
       parameters:
-        - name: cardId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: Карта активирована
@@ -64,16 +64,16 @@ paths:
   /api/user/cards/{cardId}/block:
     post:
       tags:
-        - "Пользователь: Карты"
+      - "Пользователь: Карты"
       summary: Заблокировать свою карту
       operationId: blockCard
       parameters:
-        - name: cardId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "404":
           description: Карта не найдена
@@ -84,28 +84,28 @@ paths:
   /api/user/cards/transfer:
     post:
       tags:
-        - "Пользователь: Карты"
+      - "Пользователь: Карты"
       summary: Перевести средства между своими картами
       operationId: transfer
       parameters:
-        - name: fromCardId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: toCardId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: amount
-          in: query
-          required: true
-          schema:
-            type: number
-            format: double
+      - name: fromCardId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: toCardId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: amount
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
       responses:
         "400":
           description: Некорректная сумма или ID карт
@@ -120,7 +120,7 @@ paths:
   /api/auth/login:
     post:
       tags:
-        - Аутентификация
+      - Аутентификация
       summary: Вход пользователя
       operationId: login
       requestBody:
@@ -139,20 +139,20 @@ paths:
   /api/admin/users:
     post:
       tags:
-        - "Админ: Пользователи"
+      - "Админ: Пользователи"
       summary: Создать нового пользователя
       operationId: createUser
       parameters:
-        - name: password
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: password
+        in: query
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserDto"
+              $ref: "#/components/schemas/UserCreateRequest"
         required: true
       responses:
         "201":
@@ -160,55 +160,55 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/UserResponse"
         "400":
           description: Логин занят или некорректные данные
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/UserResponse"
   /api/admin/cards:
     get:
       tags:
-        - "Админ: Карты"
+      - "Админ: Карты"
       summary: Получить все карты с пагинацией
       operationId: getAllCards
       parameters:
-        - name: pageable
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/Pageable"
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
-        "403":
-          description: Доступ запрещён (не ADMIN)
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/PageCardDto"
         "200":
           description: Список карт
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Page"
+        "403":
+          description: Доступ запрещён (не ADMIN)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardResponse"
     post:
       tags:
-        - "Админ: Карты"
+      - "Админ: Карты"
       summary: Создать новую карту
       operationId: createCard
       parameters:
-        - name: userId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: userId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CardDto"
+              $ref: "#/components/schemas/CardCreateRequest"
         required: true
       responses:
         "404":
@@ -216,88 +216,88 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/CardDto"
+                $ref: "#/components/schemas/CardResponse"
         "400":
           description: Некорректные данные карты
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/CardDto"
+                $ref: "#/components/schemas/CardResponse"
         "201":
           description: Карта создана
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/CardDto"
+                $ref: "#/components/schemas/CardResponse"
   /api/user/cards:
     get:
       tags:
-        - "Пользователь: Карты"
+      - "Пользователь: Карты"
       summary: Получить свои карты с пагинацией
       operationId: getUserCards
       parameters:
-        - name: userId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: pageable
-          in: query
-          required: true
-          schema:
-            $ref: "#/components/schemas/Pageable"
+      - name: userId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: Список карт пользователя
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/PageCardDto"
+                $ref: "#/components/schemas/PageCardResponse"
         "400":
           description: Некорректный ID пользователя
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/PageCardDto"
+                $ref: "#/components/schemas/PageCardResponse"
   /api/admin/users/{userId}:
     get:
       tags:
-        - "Админ: Пользователи"
+      - "Админ: Пользователи"
       summary: Получить пользователя по ID
       operationId: getUser
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "404":
           description: Пользователь не найден
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/UserResponse"
         "200":
           description: Пользователь найден
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/UserResponse"
     delete:
       tags:
-        - "Админ: Пользователи"
+      - "Админ: Пользователи"
       summary: Удалить пользователя
       operationId: deleteUser
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "204":
           description: Пользователь удалён
@@ -306,16 +306,16 @@ paths:
   /api/admin/cards/{cardId}:
     delete:
       tags:
-        - "Админ: Карты"
+      - "Админ: Карты"
       summary: Удалить карту
       operationId: deleteCard
       parameters:
-        - name: cardId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "204":
           description: Карта удалена
@@ -325,8 +325,8 @@ components:
   schemas:
     AuthRequest:
       required:
-        - password
-        - username
+      - password
+      - username
       type: object
       properties:
         username:
@@ -346,9 +346,17 @@ components:
           description: JWT-токен
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       description: Ответ после успешной аутентификации
-    UserDto:
+    UserCreateRequest:
       required:
-        - username
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: Логин пользователя (уникальный)
+          example: ivan.ivanov
+      description: DTO для создания пользователя системы
+    UserResponse:
       type: object
       properties:
         id:
@@ -358,27 +366,24 @@ components:
           example: 1
         username:
           type: string
-          description: Логин пользователя (уникальный)
+          description: Логин пользователя
           example: ivan.ivanov
         role:
           type: string
           description: Роль пользователя в системе
           example: USER
+          enum:
+          - USER
+          - ADMIN
       description: DTO для представления пользователя системы
-    CardDto:
+    CardCreateRequest:
       required:
-        - expirationDate
-        - maskedNumber
-        - owner
-        - status
+      - expirationDate
+      - number
+      - owner
       type: object
       properties:
-        id:
-          type: integer
-          description: ID карты
-          format: int64
-          example: 1
-        maskedNumber:
+        number:
           pattern: "^\\d{4} \\d{4} \\d{4} \\d{4}$"
           type: string
           description: Номер банковской карты
@@ -393,22 +398,44 @@ components:
           type: string
           description: Срок действия карты
           example: 12/2025
+        balance:
+          type: number
+          description: Баланс карты
+          example: 1000.5
+      description: DTO для создания банковской карты
+    CardResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID карты
+          format: int64
+          example: 1
+        maskedNumber:
+          type: string
+          description: Номер банковской карты (замаскированный)
+          example: '**** **** **** 4444'
+        owner:
+          type: string
+          description: Владелец карты
+          example: Иван Иванов
+        expirationDate:
+          type: string
+          description: Срок действия карты
+          example: 12/2025
         status:
           type: string
           description: Статус карты
           example: ACTIVE
           enum:
-            - ACTIVE
-            - BLOCKED
-            - EXPIRED
-            - ACTIVE
-            - BLOCKED
-            - EXPIRED
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
         balance:
           type: number
           description: Баланс карты
           example: 1000.5
-      description: DTO для представления банковской карты
+      description: DTO для ответа с данными банковской карты
     Pageable:
       type: object
       properties:
@@ -424,7 +451,7 @@ components:
           type: array
           items:
             type: string
-    PageCardDto:
+    PageCardResponse:
       type: object
       properties:
         totalPages:
@@ -439,7 +466,7 @@ components:
         content:
           type: array
           items:
-            $ref: "#/components/schemas/CardDto"
+            $ref: "#/components/schemas/CardResponse"
         number:
           type: integer
           format: int32

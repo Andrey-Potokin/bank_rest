@@ -1,6 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.service.CardService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,8 +47,8 @@ class AdminCardControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testGetAllCards() throws Exception {
-        CardDto dto = CardDto.builder().id(1L).owner("Admin Test").build();
-        Page<CardDto> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
+        CardResponse dto = CardResponse.builder().id(1L).owner("Admin Test").build();
+        Page<CardResponse> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
 
         when(cardService.getAllCards(any(Pageable.class))).thenReturn(page);
@@ -64,15 +65,14 @@ class AdminCardControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testCreateCard() throws Exception {
-        CardDto requestDto = CardDto.builder()
-                .maskedNumber("1111 2222 3333 4444")
+        CardCreateRequest requestDto = CardCreateRequest.builder()
+                .number("1111 2222 3333 4444")
                 .owner("Иван Иванов")
                 .expirationDate("12/2025")
-                .status(CardStatus.ACTIVE)
                 .balance(1000.50)
                 .build();
 
-        CardDto responseDto = CardDto.builder()
+        CardResponse responseDto = CardResponse.builder()
                 .id(2L)
                 .maskedNumber("1111 2222 3333 4444")
                 .owner("Иван Иванов")
@@ -81,7 +81,7 @@ class AdminCardControllerTest {
                 .balance(1000.50)
                 .build();
 
-        when(cardService.createCard(any(CardDto.class), eq(10L)))
+        when(cardService.createCard(any(CardCreateRequest.class), eq(10L)))
                 .thenReturn(responseDto);
 
         mockMvc.perform(post("/api/admin/cards?userId=10")

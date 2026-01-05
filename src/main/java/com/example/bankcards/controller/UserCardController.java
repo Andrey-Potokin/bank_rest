@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardResponse;
 import com.example.bankcards.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +31,7 @@ public class UserCardController {
     @Operation(summary = "Получить свои карты с пагинацией")
     @ApiResponse(responseCode = "200", description = "Список карт пользователя")
     @ApiResponse(responseCode = "400", description = "Некорректный ID пользователя")
-    public ResponseEntity<Page<CardDto>> getUserCards(
+    public ResponseEntity<Page<CardResponse>> getUserCards(
             @RequestParam("userId") Long userId,
             Pageable pageable) {
 
@@ -42,7 +42,7 @@ public class UserCardController {
         log.info("USER: Запрос карт для ID={}. Страница={}, размер={}",
                 userId, pageable.getPageNumber(), pageable.getPageSize());
 
-        Page<CardDto> cards = cardService.getUserCards(userId, pageable);
+        Page<CardResponse> cards = cardService.getUserCards(userId, pageable);
         return ResponseEntity.ok(cards);
     }
 

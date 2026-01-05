@@ -1,16 +1,17 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CardCreateRequest;
+import com.example.bankcards.dto.CardResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CardService {
 
-    Page<CardDto> getUserCards(Long userId, Pageable pageable);
+    Page<CardResponse> getUserCards(Long userId, Pageable pageable);
 
-    Page<CardDto> getAllCards(Pageable pageable);
+    Page<CardResponse> getAllCards(Pageable pageable);
 
-    CardDto createCard(CardDto cardDto, Long userId);
+    CardResponse createCard(CardCreateRequest request, Long userId);
 
     void blockCard(Long cardId);
 
