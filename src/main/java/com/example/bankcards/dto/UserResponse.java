@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
 @Builder
 @Schema(description = "DTO для представления пользователя системы")
@@ -16,7 +18,7 @@ public class UserResponse {
     @Schema(description = "Логин пользователя", example = "ivan.ivanov")
     private String username;
 
-    @Schema(description = "Роль пользователя в системе", example = "USER")
-    private UserRole role;
+    @Schema(description = "Роли пользователя в системе", example = "USER")
+    private Set<UserRole> roles;
 
 }

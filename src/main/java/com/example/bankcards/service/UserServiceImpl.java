@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
         User user = UserUtil.toEntity(request);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRole(UserRole.USER);
+        user.setRoles(Set.of(UserRole.USER));
 
         User savedUser = userRepository.save(user);
         log.info("Создан пользователь ID={}, username={}", savedUser.getId(), savedUser.getUsername());
@@ -53,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateRole(Long userId, String role) {
+    public void updateRole(Long userId, UserRole role) {
         if (userId <= 0) {
             throw new IllegalArgumentException("ID пользователя должен быть положительным");
         }
@@ -62,10 +64,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден"));
 
         try {
-            UserRole userRole = UserRole.valueOf(role.toUpperCase());
-            user.setRole(userRole);
+            Set<UserRole> userRoles = user.getRoles();
+            userRoles.add(role);
+            user.setRoles(userRoles);
             userRepository.save(user);
-            log.info("Роль пользователя ID={} обновлена до {}", userId, userRole);
+            log.info("Роль пользователя ID={} обновлена/добавлена", userId);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Недопустимая роль: " + role);
         }

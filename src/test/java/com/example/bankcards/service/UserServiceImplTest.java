@@ -13,10 +13,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +60,10 @@ class UserServiceImplTest {
 
         assertEquals(100L, result.getId());
         assertEquals("newuser", result.getUsername());
-        assertEquals(UserRole.USER, result.getRole());
+
+        assertNotNull(result.getRoles());
+        assertEquals(1, result.getRoles().size());
+        assertTrue(result.getRoles().contains(UserRole.USER));
     }
 
     @Test
@@ -74,7 +81,7 @@ class UserServiceImplTest {
         User user = User.builder()
                 .id(200L)
                 .username("testuser")
-                .role(UserRole.ADMIN)
+                .roles(Set.of(UserRole.ADMIN))
                 .build();
 
         when(userRepository.findById(200L)).thenReturn(Optional.of(user));
@@ -83,7 +90,10 @@ class UserServiceImplTest {
 
         assertEquals(200L, result.getId());
         assertEquals("testuser", result.getUsername());
-        assertEquals(UserRole.ADMIN, result.getRole());
+
+        assertNotNull(result.getRoles());
+        assertEquals(1, result.getRoles().size());
+        assertTrue(result.getRoles().contains(UserRole.ADMIN));
     }
 
     @Test
@@ -95,24 +105,20 @@ class UserServiceImplTest {
 
     @Test
     void testUpdateRole_Success() {
-        User user = User.builder().id(400L).build();
+        User user = User.builder()
+                .id(400L)
+                .roles(new HashSet<>())
+                .build();
 
         when(userRepository.findById(400L)).thenReturn(Optional.of(user));
 
-        userService.updateRole(400L, "ADMIN");
+        userService.updateRole(400L, UserRole.ADMIN);
 
         verify(userRepository).save(user);
-        assertEquals(UserRole.ADMIN, user.getRole());
-    }
 
-    @Test
-    void testUpdateRole_InvalidRole() {
-        User user = User.builder().id(500L).build();
-
-        when(userRepository.findById(500L)).thenReturn(Optional.of(user));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.updateRole(500L, "INVALID_ROLE"));
+        assertNotNull(user.getRoles());
+        assertEquals(1, user.getRoles().size());
+        assertTrue(user.getRoles().contains(UserRole.ADMIN));
     }
 
     @Test

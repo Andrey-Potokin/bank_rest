@@ -12,7 +12,7 @@ public final class UserUtil {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .build();
     }
 

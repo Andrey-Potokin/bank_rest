@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserCreateRequest;
 import com.example.bankcards.dto.UserResponse;
+import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 @SpringBootTest(properties = "spring.profiles.active=test")
 @AutoConfigureMockMvc(addFilters = false)
@@ -68,7 +68,7 @@ class AdminUserControllerTest {
         mockMvc.perform(put("/api/admin/users/300/role?role=ADMIN"))
                 .andExpect(status().isOk());
 
-        verify(userService).updateRole(300L, "ADMIN");
+        verify(userService).updateRole(300L, UserRole.ADMIN);
     }
 
     @Test

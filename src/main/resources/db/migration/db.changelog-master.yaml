@@ -4,4 +4,6 @@ databaseChangeLog:
   - include:
       file: db/migration/2_create_cards_table.sql
   - include:
-      file: db/migration/3_create_admin.sql
+      file: db/migration/3_create_user_roles.sql
+  - include:
+      file: db/migration/4_create_admin.sql

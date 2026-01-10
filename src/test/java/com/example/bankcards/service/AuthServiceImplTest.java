@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,7 +44,7 @@ class AuthServiceImplTest {
                 .id(1L)
                 .username("testuser")
                 .password("encodedPassword")
-                .role(UserRole.USER)
+                .roles(Set.of(UserRole.USER))
                 .build();
     }
 
