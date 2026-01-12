@@ -3,16 +3,17 @@ package com.example.bankcards.service;
 import com.example.bankcards.config.JwtConfig;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserRole;
-import com.example.bankcards.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,10 +29,7 @@ class AuthServiceImplTest {
     private JwtConfig jwtConfig;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UserRepository userRepository;
+    private AuthenticationManager authenticationManager;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -50,48 +48,57 @@ class AuthServiceImplTest {
 
     @Test
     void login_success() {
-        when(userRepository.findByUsername("testuser"))
-                .thenReturn(Optional.of(testUser));
-        when(passwordEncoder.matches("rawPassword", "encodedPassword"))
-                .thenReturn(true);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken("testuser", "rawPassword");
+
+        Authentication authResult = new UsernamePasswordAuthenticationToken(
+                testUser,
+                "rawPassword",
+                testUser.getAuthorities()
+        );
+
+        when(authenticationManager.authenticate(authToken))
+                .thenReturn(authResult);
+
         when(jwtConfig.generateToken(testUser))
                 .thenReturn("jwtToken");
 
         String token = authService.login("testuser", "rawPassword");
 
         assertEquals("jwtToken", token);
-        verify(userRepository).findByUsername("testuser");
-        verify(passwordEncoder).matches("rawPassword", "encodedPassword");
+        verify(authenticationManager).authenticate(authToken);
         verify(jwtConfig).generateToken(testUser);
     }
 
     @Test
     void login_userNotFound() {
-        when(userRepository.findByUsername("unknown"))
-                .thenReturn(Optional.empty());
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken("unknown", "password");
 
-        assertThrows(RuntimeException.class, () -> {
+        when(authenticationManager.authenticate(authToken))
+                .thenThrow(new BadCredentialsException("User not found"));
+
+        assertThrows(BadCredentialsException.class, () -> {
             authService.login("unknown", "password");
         });
 
-        verify(userRepository).findByUsername("unknown");
-        verifyNoInteractions(passwordEncoder, jwtConfig);
+        verify(authenticationManager).authenticate(authToken);
+        verifyNoInteractions(jwtConfig);
     }
 
     @Test
     void login_invalidPassword() {
-        when(userRepository.findByUsername("testuser"))
-                .thenReturn(Optional.of(testUser));
-        when(passwordEncoder.matches("wrongPassword", "encodedPassword"))
-                .thenReturn(false);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken("testuser", "wrongPassword");
 
-        assertThrows(RuntimeException.class, () -> {
+        when(authenticationManager.authenticate(authToken))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        assertThrows(BadCredentialsException.class, () -> {
             authService.login("testuser", "wrongPassword");
         });
 
-        verify(userRepository).findByUsername("testuser");
-        verify(passwordEncoder).matches("wrongPassword", "encodedPassword");
+        verify(authenticationManager).authenticate(authToken);
         verifyNoInteractions(jwtConfig);
     }
-
 }

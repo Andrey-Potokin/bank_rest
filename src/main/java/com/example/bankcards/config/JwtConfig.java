@@ -4,16 +4,17 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.bankcards.entity.User;
 import com.example.bankcards.exception.JwtValidationException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtConfig {
@@ -37,15 +38,22 @@ public class JwtConfig {
         this.algorithm = Algorithm.HMAC256(secretKey);
     }
 
-    public String generateToken(User user) {
+    public String generateToken(Object principal) {
+        if (!(principal instanceof UserDetails userDetails)) {
+            throw new IllegalArgumentException(
+                    "Principal должен реализовывать UserDetails. Получен: " + principal.getClass()
+            );
+        }
+
         return JWT.create()
-                .withSubject(user.getUsername())
+                .withSubject(userDetails.getUsername())
                 .withIssuer(issuer)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .withClaim("roles",
-                        user.getAuthorities().stream()
+                        userDetails.getAuthorities().stream()
                                 .map(GrantedAuthority::getAuthority)
-                                .collect(java.util.stream.Collectors.toList()))
+                                .collect(Collectors.toList())
+                )
                 .sign(algorithm);
     }
 

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Аутентификация", description = "API для регистрации и входа пользователей")
+@Tag(name = "Аутентификация", description = "API для аутентификации пользователей")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -34,5 +34,4 @@ public class AuthController {
 
         return ResponseEntity.ok(new JwtResponse(token));
     }
-
 }

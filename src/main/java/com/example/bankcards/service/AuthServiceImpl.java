@@ -1,10 +1,10 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.config.JwtConfig;
-import com.example.bankcards.entity.User;
-import com.example.bankcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,19 +12,14 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final JwtConfig jwtConfig;
-    private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public String login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Пользователь с " + username + " не найден"));
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Неверный пароль");
-        }
+        Authentication authentication = authenticationManager.authenticate(authToken);
 
-        return jwtConfig.generateToken(user);
+        return jwtConfig.generateToken(authentication.getPrincipal());
     }
-
 }
