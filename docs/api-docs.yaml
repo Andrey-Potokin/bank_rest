@@ -1,20 +1,18 @@
 openapi: 3.0.1
 info:
   title: Bank Cards API
-  description: API для работы с банковскими картами
+  description: API для управления банковскими картами и пользователями
   version: "1.0"
 servers:
 - url: http://localhost:8080
   description: Generated server url
-security:
-- bearerAuth: []
 tags:
+- name: Аутентификация
+  description: API для аутентификации пользователей
 - name: "Пользователь: Карты"
   description: API для работы с картами пользователя (только USER)
 - name: "Админ: Пользователи"
   description: API для управления пользователями (только ADMIN)
-- name: Аутентификация
-  description: API для регистрации и входа пользователей
 - name: "Админ: Карты"
   description: API для управления картами (только ADMIN)
 paths:
@@ -36,6 +34,10 @@ paths:
         required: true
         schema:
           type: string
+          description: Роль пользователя в системе
+          enum:
+          - USER
+          - ADMIN
       responses:
         "404":
           description: Пользователь не найден
@@ -180,18 +182,18 @@ paths:
         schema:
           $ref: "#/components/schemas/Pageable"
       responses:
-        "200":
-          description: Список карт
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Page"
         "403":
           description: Доступ запрещён (не ADMIN)
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageCardResponse"
+        "200":
+          description: Список карт
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Page"
     post:
       tags:
       - "Админ: Карты"
@@ -368,13 +370,18 @@ components:
           type: string
           description: Логин пользователя
           example: ivan.ivanov
-        role:
-          type: string
-          description: Роль пользователя в системе
+        roles:
+          uniqueItems: true
+          type: array
+          description: Роли пользователя в системе
           example: USER
-          enum:
-          - USER
-          - ADMIN
+          items:
+            type: string
+            description: Роль пользователя в системе
+            example: USER
+            enum:
+            - USER
+            - ADMIN
       description: DTO для представления пользователя системы
     CardCreateRequest:
       required:
@@ -454,12 +461,12 @@ components:
     PageCardResponse:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -472,11 +479,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         first:
           type: boolean
         last:
@@ -513,12 +520,12 @@ components:
     Page:
       type: object
       properties:
-        totalPages:
-          type: integer
-          format: int32
         totalElements:
           type: integer
           format: int64
+        totalPages:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -531,11 +538,11 @@ components:
           format: int32
         sort:
           $ref: "#/components/schemas/SortObject"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         first:
           type: boolean
         last:
