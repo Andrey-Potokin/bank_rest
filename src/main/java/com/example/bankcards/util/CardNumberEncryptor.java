@@ -11,14 +11,41 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+/**
+ * Конвертер для шифрования и дешифрования номеров банковских карт.
+ * <p>
+ * Реализует интерфейс {@link AttributeConverter} и используется JPA для автоматического
+ * шифрования номера карты перед сохранением в базе данных и дешифрования при чтении.
+ * Шифрование выполняется с использованием алгоритма AES.
+ * <p>
+ * Ключ шифрования задаётся через свойство {@code app.encryption.key} в файле конфигурации
+ * (например, {@code application.yaml}). Длина ключа должна быть 16, 24 или 32 байта,
+ * что соответствует AES-128, AES-192 или AES-256.
+ */
 @Converter
 public class CardNumberEncryptor implements AttributeConverter<String, String> {
 
+    /**
+     * Секретный ключ для шифрования, загружаемый из конфигурации.
+     * Должен быть длиной 16, 24 или 32 байта.
+     */
     @Value("${app.encryption.key}")
     private String encryptionKey;
 
+    /**
+     * Объект ключа, используемый для операций шифрования и дешифрования.
+     * Инициализируется после загрузки строки ключа.
+     */
     private SecretKey secretKey;
 
+    /**
+     * Метод инициализации компонента после внедрения зависимостей.
+     * <p>
+     * Проверяет наличие и корректность длины ключа шифрования.
+     * Создаёт объект {@link SecretKey} на основе строки ключа в кодировке UTF-8.
+     *
+     * @throws IllegalArgumentException если ключ не задан или имеет недопустимую длину
+     */
     @PostConstruct
     public void init() {
         if (encryptionKey == null || encryptionKey.isEmpty()) {
@@ -37,6 +64,16 @@ public class CardNumberEncryptor implements AttributeConverter<String, String> {
         this.secretKey = new SecretKeySpec(keyBytes, "AES");
     }
 
+    /**
+     * Преобразует номер карты из сущности JPA в зашифрованное представление для хранения в базе данных.
+     * <p>
+     * Выполняет шифрование с помощью AES в режиме по умолчанию.
+     * Результат кодируется в формат Base64 для безопасного хранения в текстовом поле.
+     *
+     * @param attribute номер карты в открытом виде; может быть null
+     * @return зашифрованный номер карты в формате Base64; null, если атрибут равен null
+     * @throws RuntimeException если произошла ошибка при шифровании
+     */
     @Override
     public String convertToDatabaseColumn(String attribute) {
         if (attribute == null) return null;
@@ -50,6 +87,16 @@ public class CardNumberEncryptor implements AttributeConverter<String, String> {
         }
     }
 
+    /**
+     * Преобразует зашифрованный номер карты из базы данных в открытое представление для сущности JPA.
+     * <p>
+     * Декодирует строку из Base64 и выполняет дешифрование с помощью AES.
+     * Результат преобразуется обратно в строку в кодировке UTF-8.
+     *
+     * @param dbData зашифрованный номер карты в формате Base64; может быть null
+     * @return номер карты в открытом виде; null, если данные из БД равны null
+     * @throws RuntimeException если произошла ошибка при дешифровании
+     */
     @Override
     public String convertToEntityAttribute(String dbData) {
         if (dbData == null) return null;
@@ -62,5 +109,4 @@ public class CardNumberEncryptor implements AttributeConverter<String, String> {
             throw new RuntimeException("Ошибка дешифрования номера карты", e);
         }
     }
-
 }

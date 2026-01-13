@@ -15,6 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST-контроллер для обработки аутентификации пользователей.
+ * <p>
+ * Предоставляет конечную точку для входа пользователя в систему
+ * с получением JWT-токена в ответ при успешной аутентификации.
+ * Контроллер доступен без аутентификации и предназначен для всех пользователей.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -22,8 +29,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
+    /**
+     * Сервис аутентификации, отвечающий за логику входа и генерацию JWT-токенов.
+     */
     private final AuthService authService;
 
+    /**
+     * Выполняет аутентификацию пользователя по логину и паролю.
+     * <p>
+     * Принимает данные для входа, проверяет их корректность и,
+     * при успешной проверке, возвращает JWT-токен.
+     *
+     * @param request объект с данными для аутентификации (логин и пароль), не может быть null
+     * @return ResponseEntity с объектом {@link JwtResponse}, содержащим JWT-токен,
+     *         и HTTP-статусом 200 (OK)
+     */
     @PostMapping("/login")
     @Operation(summary = "Вход пользователя")
     @ApiResponse(responseCode = "200", description = "Успешная аутентификация")

@@ -25,14 +25,43 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Реализация сервиса для управления банковскими картами.
+ * <p>
+ * Предоставляет бизнес-логику для операций с картами: получение списка, создание, блокировка,
+ * активация, удаление и перевод средств между картами. Все операции выполняются с учётом
+ * прав доступа и состояния карт.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardServiceImpl implements CardService {
 
+    /**
+     * Репозиторий для работы с сущностями банковских карт.
+     * Обеспечивает доступ к данным карт в базе данных.
+     */
     private final CardRepository cardRepository;
+
+    /**
+     * Репозиторий для работы с сущностями пользователей.
+     * Используется для проверки существования пользователя при создании карты
+     * и для контроля доступа к операциям.
+     */
     private final UserRepository userRepository;
 
+    /**
+     * Получает страницу с банковскими картами указанного пользователя.
+     * <p>
+     * Проверяет, что идентификатор пользователя положителен и пользователь существует.
+     * Возвращает карты с поддержкой пагинации (размер страницы, номер, сортировка).
+     *
+     * @param userId   идентификатор пользователя, чьи карты запрашиваются; должен быть положительным
+     * @param pageable параметры пагинации: размер, номер страницы, направление сортировки
+     * @return объект {@link Page} с данными о картах в виде {@link CardResponse}
+     * @throws IllegalArgumentException если ID пользователя не положительный
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<CardResponse> getUserCards(Long userId, Pageable pageable) {
@@ -52,6 +81,15 @@ public class CardServiceImpl implements CardService {
         return new PageImpl<>(cardDtos, pageable, cardsPage.getTotalElements());
     }
 
+    /**
+     * Получает страницу со всеми банковскими картами в системе.
+     * <p>
+     * Предназначен для использования администратором. Возвращает все карты
+     * с поддержкой пагинации и сортировки.
+     *
+     * @param pageable параметры пагинации: размер, номер страницы, направление сортировки
+     * @return объект {@link Page} со списком всех карт в виде {@link CardResponse}
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<CardResponse> getAllCards(Pageable pageable) {
@@ -59,6 +97,17 @@ public class CardServiceImpl implements CardService {
                 .map(CardUtil::toDto);
     }
 
+    /**
+     * Создаёт новую банковскую карту для указанного пользователя.
+     * <p>
+     * Проверяет существование пользователя по ID. Создаёт карту с переданными параметрами,
+     * устанавливает статус "ACTIVE" и сохраняет в базе данных. Возвращает данные созданной карты.
+     *
+     * @param request объект с данными для создания карты; не может быть null
+     * @param userId  идентификатор пользователя, которому выдаётся карта
+     * @return объект {@link CardResponse} с данными новой карты
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     */
     @Override
     @Transactional
     public CardResponse createCard(CardCreateRequest request, Long userId) {
@@ -74,6 +123,16 @@ public class CardServiceImpl implements CardService {
         return CardUtil.toDto(savedCard);
     }
 
+    /**
+     * Блокирует указанную банковскую карту.
+     * <p>
+     * Проверяет, что карта принадлежит текущему пользователю. Если нет — выбрасывает исключение.
+     * Устанавливает статус карты в {@link CardStatus#BLOCKED}.
+     *
+     * @param cardId идентификатор карты, которую необходимо заблокировать
+     * @throws NotFoundException если карта с указанным ID не найдена
+     * @throws AccessDeniedException если карта не принадлежит текущему пользователю
+     */
     @Override
     @Transactional
     public void blockCard(Long cardId) {
@@ -91,6 +150,15 @@ public class CardServiceImpl implements CardService {
         log.info("Карта ID={} заблокирована пользователем {}", cardId, currentUsername);
     }
 
+    /**
+     * Активирует указанную банковскую карту.
+     * <p>
+     * Устанавливает статус карты в {@link CardStatus#ACTIVE}. Может использоваться
+     * администратором для активации новой карты.
+     *
+     * @param cardId идентификатор карты, которую необходимо активировать
+     * @throws NotFoundException если карта с указанным ID не найдена
+     */
     @Override
     @Transactional
     public void activateCard(Long cardId) {
@@ -102,6 +170,15 @@ public class CardServiceImpl implements CardService {
         log.info("Карта ID={} активирована", cardId);
     }
 
+    /**
+     * Удаляет банковскую карту из системы.
+     * <p>
+     * Операция безвозвратно удаляет карту по её идентификатору.
+     * Может использоваться администратором для удаления ошибочно созданных или устаревших карт.
+     *
+     * @param cardId идентификатор карты, которую необходимо удалить
+     * @throws NotFoundException если карта с указанным ID не найдена
+     */
     @Override
     @Transactional
     public void deleteCard(Long cardId) {
@@ -112,6 +189,28 @@ public class CardServiceImpl implements CardService {
         log.info("Карта ID={} удалена", cardId);
     }
 
+    /**
+     * Выполняет перевод средств между двумя банковскими картами.
+     * <p>
+     * Проверяет:
+     * <ul>
+     *   <li>Положительность суммы перевода</li>
+     *   <li>Существование обеих карт</li>
+     *   <li>Принадлежность карт одному пользователю</li>
+     *   <li>Доступность средств на карте-отправителе</li>
+     *   <li>Принадлежность карт текущему пользователю</li>
+     * </ul>
+     * При успешной проверке списывает сумму с одной карты и зачисляет на другую.
+     *
+     * @param fromCardId идентификатор карты-отправителя
+     * @param toCardId   идентификатор карты-получателя
+     * @param amount     сумма перевода; должна быть положительной
+     * @throws InvalidAmountException если сумма перевода не положительная
+     * @throws NotFoundException если одна из карт не найдена
+     * @throws TransferNotAllowedException если карты принадлежат разным пользователям
+     * @throws AccessDeniedException если карты не принадлежат текущему пользователю
+     * @throws InsufficientFundsException если на карте-отправителе недостаточно средств
+     */
     @Override
     @Transactional
     public void transfer(Long fromCardId, Long toCardId, Double amount) {
@@ -148,5 +247,4 @@ public class CardServiceImpl implements CardService {
 
         log.info("Выполнен перевод: {} руб. с карты {} на карту {}", amount, fromCardId, toCardId);
     }
-
 }

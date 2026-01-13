@@ -25,6 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST-контроллер для управления банковскими картами от имени администратора.
+ * <p>
+ * Обеспечивает операции по просмотру, созданию, активации и удалению карт.
+ * Доступ к методам контроллера разрешен только пользователям с ролью ADMIN.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +40,16 @@ public class AdminCardController {
 
     private final CardService cardService;
 
+    /**
+     * Получает список всех банковских карт с поддержкой пагинации.
+     * <p>
+     * Возвращает страницу с информацией о картах, соответствующих текущему запросу.
+     * Используется для административного просмотра всех карт в системе.
+     *
+     * @param pageable параметры пагинации (номер страницы, размер, сортировка)
+     * @return ResponseEntity с объектом Page, содержащим список {@link CardResponse}
+     *         и HTTP-статус 200 (OK)
+     */
     @GetMapping
     @Operation(summary = "Получить все карты с пагинацией")
     @ApiResponse(
@@ -50,6 +66,17 @@ public class AdminCardController {
         return ResponseEntity.ok(cards);
     }
 
+    /**
+     * Создаёт новую банковскую карту для указанного пользователя.
+     * <p>
+     * Принимает данные для создания карты и идентификатор пользователя.
+     * Проверка корректности данных выполняется с помощью валидации.
+     *
+     * @param request объект с данными для создания карты, не может быть null
+     * @param userId идентификатор пользователя, которому выдаётся карта, должен быть положительным числом
+     * @return ResponseEntity с объектом {@link CardResponse}, содержащим данные созданной карты,
+     *         и HTTP-статус 201 (Created)
+     */
     @PostMapping
     @Operation(summary = "Создать новую карту")
     @ApiResponse(responseCode = "201", description = "Карта создана")
@@ -65,6 +92,15 @@ public class AdminCardController {
         return ResponseEntity.created(null).body(createdCard);
     }
 
+    /**
+     * Активирует существующую банковскую карту.
+     * <p>
+     * После активации карта становится пригодной для использования.
+     * Выполняется проверка существования карты по идентификатору.
+     *
+     * @param cardId идентификатор карты, которую необходимо активировать
+     * @return ResponseEntity с пустым телом и HTTP-статусом 200 (OK)
+     */
     @PutMapping("/{cardId}/activate")
     @Operation(summary = "Активировать карту")
     @ApiResponse(responseCode = "200", description = "Карта активирована")
@@ -76,6 +112,15 @@ public class AdminCardController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Удаляет банковскую карту из системы.
+     * <p>
+     * Операция безвозвратно удаляет карту по её идентификатору.
+     * Может использоваться для удаления ошибочно созданных или утерянных карт.
+     *
+     * @param cardId идентификатор карты, которую необходимо удалить
+     * @return ResponseEntity с пустым телом и HTTP-статусом 204 (No Content)
+     */
     @DeleteMapping("/{cardId}")
     @Operation(summary = "Удалить карту")
     @ApiResponse(responseCode = "204", description = "Карта удалена")
@@ -86,5 +131,4 @@ public class AdminCardController {
         log.info("Карта ID={} удалена", cardId);
         return ResponseEntity.noContent().build();
     }
-
 }

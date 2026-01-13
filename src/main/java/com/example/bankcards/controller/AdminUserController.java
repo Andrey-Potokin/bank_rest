@@ -23,6 +23,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST-контроллер для управления пользователями системы от имени администратора.
+ * <p>
+ * Обеспечивает операции по созданию, просмотру, изменению роли и удалению пользователей.
+ * Доступ к методам контроллера разрешён только пользователям с ролью ADMIN.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +38,18 @@ public class AdminUserController {
 
     private final UserService userService;
 
+    /**
+     * Создаёт нового пользователя в системе.
+     * <p>
+     * Принимает данные для создания пользователя и пароль.
+     * Проверяет уникальность логина и корректность данных.
+     * После успешного создания возвращает данные нового пользователя.
+     *
+     * @param request объект с данными пользователя (имя, фамилия, логин и т.д.), не может быть null
+     * @param password пароль пользователя, не может быть пустым
+     * @return ResponseEntity с объектом {@link UserResponse}, содержащим данные созданного пользователя,
+     *         и HTTP-статусом 201 (Created)
+     */
     @PostMapping
     @Operation(summary = "Создать нового пользователя")
     @ApiResponse(responseCode = "201", description = "Пользователь создан")
@@ -46,6 +64,16 @@ public class AdminUserController {
         return ResponseEntity.created(null).body(createdUser);
     }
 
+    /**
+     * Получает информацию о пользователе по его идентификатору.
+     * <p>
+     * Возвращает данные пользователя, включая имя, фамилию, логин и текущую роль.
+     * Выполняется проверка существования пользователя в системе.
+     *
+     * @param userId идентификатор пользователя, которого необходимо найти
+     * @return ResponseEntity с объектом {@link UserResponse}, содержащим данные пользователя,
+     *         и HTTP-статусом 200 (OK)
+     */
     @GetMapping("/{userId}")
     @Operation(summary = "Получить пользователя по ID")
     @ApiResponse(responseCode = "200", description = "Пользователь найден")
@@ -56,6 +84,16 @@ public class AdminUserController {
         return ResponseEntity.ok(user);
     }
 
+    /**
+     * Обновляет роль пользователя.
+     * <p>
+     * Позволяет изменить роль пользователя (например, USER → ADMIN).
+     * Проверяет корректность переданной роли и существование пользователя.
+     *
+     * @param userId идентификатор пользователя, чья роль должна быть изменена
+     * @param role новая роль пользователя, не может быть null
+     * @return ResponseEntity с пустым телом и HTTP-статусом 200 (OK)
+     */
     @PutMapping("/{userId}/role")
     @Operation(summary = "Обновить роль пользователя")
     @ApiResponse(responseCode = "200", description = "Роль обновлена")
@@ -71,6 +109,15 @@ public class AdminUserController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Удаляет пользователя из системы.
+     * <p>
+     * Операция безвозвратно удаляет пользователя по его идентификатору.
+     * Может использоваться для деактивации учётной записи.
+     *
+     * @param userId идентификатор пользователя, которого необходимо удалить
+     * @return ResponseEntity с пустым телом и HTTP-статусом 204 (No Content)
+     */
     @DeleteMapping("/{userId}")
     @Operation(summary = "Удалить пользователя")
     @ApiResponse(responseCode = "204", description = "Пользователь удалён")
@@ -81,5 +128,4 @@ public class AdminUserController {
         log.info("Пользователь ID={} удалён", userId);
         return ResponseEntity.noContent().build();
     }
-
 }

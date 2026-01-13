@@ -18,6 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST-контроллер для работы с банковскими картами от имени пользователя.
+ * <p>
+ * Предоставляет функциональность просмотра своих карт, блокировки карты
+ * и перевода средств между собственными картами.
+ * Доступ к методам контроллера разрешён только пользователям с ролью USER.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -25,8 +32,24 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Пользователь: Карты", description = "API для работы с картами пользователя (только USER)")
 public class UserCardController {
 
+    /**
+     * Сервис для работы с банковскими картами.
+     * Обеспечивает бизнес-логику получения, блокировки и перевода средств между картами.
+     */
     private final CardService cardService;
 
+    /**
+     * Получает страницу с банковскими картами пользователя.
+     * <p>
+     * Выполняет проверку, что идентификатор пользователя положительный.
+     * Возвращает список карт с поддержкой пагинации (размер страницы, номер, сортировка).
+     *
+     * @param userId   идентификатор пользователя, чьи карты запрашиваются; должен быть положительным
+     * @param pageable параметры пагинации: номер страницы, размер, сортировка
+     * @return ResponseEntity с объектом {@link Page} содержащим список {@link CardResponse},
+     *         с HTTP-статусом 200 (OK)
+     * @throws IllegalArgumentException если userId не положительный
+     */
     @GetMapping
     @Operation(summary = "Получить свои карты с пагинацией")
     @ApiResponse(responseCode = "200", description = "Список карт пользователя")
@@ -46,6 +69,15 @@ public class UserCardController {
         return ResponseEntity.ok(cards);
     }
 
+    /**
+     * Блокирует указанную банковскую карту.
+     * <p>
+     * Проверяет, что карта принадлежит текущему пользователю.
+     * После успешной блокировки карта становится недоступной для операций.
+     *
+     * @param cardId идентификатор карты, которую необходимо заблокировать
+     * @return ResponseEntity с пустым телом и HTTP-статусом 200 (OK)
+     */
     @PostMapping("/{cardId}/block")
     @Operation(summary = "Заблокировать свою карту")
     @ApiResponse(responseCode = "200", description = "Карта заблокирована")
@@ -58,6 +90,17 @@ public class UserCardController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Выполняет перевод средств между двумя картами пользователя.
+     * <p>
+     * Проверяет, что обе карты принадлежат одному пользователю, достаточность средств
+     * на счёт-отправителя и корректность суммы перевода.
+     *
+     * @param fromCardId идентификатор карты-отправителя
+     * @param toCardId   идентификатор карты-получателя
+     * @param amount     сумма перевода, должна быть положительной
+     * @return ResponseEntity с пустым телом и HTTP-статусом 200 (OK)
+     */
     @PostMapping("/transfer")
     @Operation(summary = "Перевести средства между своими картами")
     @ApiResponse(responseCode = "200", description = "Перевод выполнен")
@@ -77,5 +120,4 @@ public class UserCardController {
         log.info("Перевод выполнен: {} руб. с карты {} на карту {}", amount, fromCardId, toCardId);
         return ResponseEntity.ok().build();
     }
-
 }

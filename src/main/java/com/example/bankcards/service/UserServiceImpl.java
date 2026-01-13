@@ -15,14 +15,41 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+/**
+ * Реализация сервиса для управления пользователями системы.
+ * <p>
+ * Содержит бизнес-логику для операций по созданию, получению, изменению роли и удалению пользователей.
+ * Все операции выполняются с проверкой входных данных, уникальности логина и существования пользователя.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    /**
+     * Репозиторий для работы с сущностями пользователей в базе данных.
+     * Обеспечивает доступ к операциям CRUD и поиску по логину.
+     */
     private final UserRepository userRepository;
+
+    /**
+     * Кодировщик паролей, используемый для безопасного хранения паролей.
+     * Преобразует открытый пароль в хэш (например, с помощью BCrypt) перед сохранением.
+     */
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Создаёт нового пользователя в системе.
+     * <p>
+     * Выполняет проверку на уникальность логина. Если пользователь с таким логином уже существует,
+     * выбрасывает исключение. В ином случае создаёт сущность пользователя, устанавливает зашифрованный
+     * пароль и роль по умолчанию (USER), сохраняет в базе данных и возвращает DTO с данными.
+     *
+     * @param request  объект с данными пользователя (логин); не может быть null
+     * @param password пароль пользователя в открытом виде; будет зашифрован перед сохранением
+     * @return объект {@link UserResponse} с данными созданного пользователя (ID, логин, роли)
+     * @throws IllegalArgumentException если логин уже занят
+     */
     @Override
     @Transactional
     public UserResponse createUser(UserCreateRequest request, String password) {
@@ -41,6 +68,18 @@ public class UserServiceImpl implements UserService {
         return UserUtil.toDto(savedUser);
     }
 
+    /**
+     * Получает данные пользователя по его идентификатору.
+     * <p>
+     * Проверяет, что ID положительный. Ищет пользователя в базе данных по ID.
+     * Если пользователь не найден — выбрасывает исключение. В противном случае преобразует
+     * сущность в DTO и возвращает его.
+     *
+     * @param id идентификатор пользователя; должен быть положительным числом
+     * @return объект {@link UserResponse} с логином, ID и ролями пользователя
+     * @throws IllegalArgumentException если ID не положительный
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     */
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
@@ -53,6 +92,20 @@ public class UserServiceImpl implements UserService {
         return UserUtil.toDto(user);
     }
 
+    /**
+     * Обновляет (добавляет) роль пользователя.
+     * <p>
+     * Проверяет корректность ID и существование пользователя. Добавляет указанную роль
+     * к текущему набору ролей пользователя. Если роль недопустима — выбрасывает исключение.
+     * <p>
+     * Примечание: в текущей реализации роль добавляется, но не заменяет существующие.
+     * Возможны множественные роли.
+     *
+     * @param userId идентификатор пользователя; должен быть положительным
+     * @param role   новая роль пользователя; не может быть null
+     * @throws IllegalArgumentException если ID не положительный или роль недопустима
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     */
     @Override
     @Transactional
     public void updateRole(Long userId, UserRole role) {
@@ -74,6 +127,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Удаляет пользователя из системы по его идентификатору.
+     * <p>
+     * Проверяет, что ID положительный и пользователь существует. Если проверки пройдены —
+     * удаляет запись из базы данных, включая связанные данные (например, карты).
+     *
+     * @param userId идентификатор пользователя; должен быть положительным
+     * @throws IllegalArgumentException если ID не положительный
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     */
     @Override
     @Transactional
     public void deleteUser(Long userId) {
@@ -88,5 +151,4 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
         log.info("Пользователь ID={} удалён", userId);
     }
-
 }
