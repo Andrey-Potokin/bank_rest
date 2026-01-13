@@ -1,9 +1,21 @@
 databaseChangeLog:
+  # Создание таблицы пользователей
   - include:
       file: db/migration/1_create_users_table.sql
+
+  # Создание таблицы банковских карт
   - include:
       file: db/migration/2_create_cards_table.sql
+
+  # Создание таблицы ролей пользователей
   - include:
       file: db/migration/3_create_user_roles.sql
+
+  # Создание учётной записи администратора (только если пользователь с логином 'admin' не существует)
   - include:
       file: db/migration/4_create_admin.sql
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: "SELECT COUNT(*) FROM users WHERE username = 'admin'"
